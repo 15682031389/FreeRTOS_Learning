@@ -191,7 +191,7 @@ only for ports that are using the MPU. */
 #else /* portUSING_MPU_WRAPPERS */
 
 	#define PRIVILEGED_FUNCTION
-	#define PRIVILEGED_DATA
+	#define PRIVILEGED_DATA				/*该变量需要以特权模式进行访问*/
 	#define portUSING_MPU_WRAPPERS 0
 
 #endif /* portUSING_MPU_WRAPPERS */

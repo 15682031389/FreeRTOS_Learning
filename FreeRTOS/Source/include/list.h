@@ -202,6 +202,7 @@ typedef struct xMINI_LIST_ITEM MiniListItem_t;
 /*
  * Definition of the type of queue used by the scheduler.
  */
+/*调度器使用的队列*/
 typedef struct xLIST
 {
 	listFIRST_LIST_INTEGRITY_CHECK_VALUE				/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */

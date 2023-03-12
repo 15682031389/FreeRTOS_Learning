@@ -107,6 +107,10 @@ functions but without including stdio.h here. */
 #endif
 
 /* Values that can be assigned to the ucNotifyState member of the TCB. */
+/**
+ * 这三个宏定义是在任务通知机制当中使用，通过xTaskNotify()和xTaskNotifyWait()函数实现
+ * 这三个宏定义写在c文件中的原因是避免外部访问和修改，同时在编译时能减少头文件的引用，加快程序的编译速度
+*/
 #define taskNOT_WAITING_NOTIFICATION	( ( uint8_t ) 0 )
 #define taskWAITING_NOTIFICATION		( ( uint8_t ) 1 )
 #define taskNOTIFICATION_RECEIVED		( ( uint8_t ) 2 )
@@ -140,6 +144,9 @@ a statically allocated stack and a dynamically allocated TCB. */
 /*
  * Macros used by vListTask to indicate which state a task is in.
  */
+/**
+ * 任务所处的状态
+*/
 #define tskBLOCKED_CHAR		( 'B' )
 #define tskREADY_CHAR		( 'R' )
 #define tskDELETED_CHAR		( 'D' )
@@ -290,8 +297,10 @@ to its original value when it is released. */
  * and stores task state information, including a pointer to the task's context
  * (the task's run time environment, including register values)
  */
+/*任务控制块(TCB)结构类型定义，并取别名为tskTCB*/
 typedef struct tskTaskControlBlock
 {
+	/*volatile关键字，避免编译器优化变量的读取操作，保证每次都是从内存读取变量而不是寄存器*/
 	volatile StackType_t	*pxTopOfStack;	/*< Points to the location of the last item placed on the tasks stack.  THIS MUST BE THE FIRST MEMBER OF THE TCB STRUCT. */
 
 	#if ( portUSING_MPU_WRAPPERS == 1 )
@@ -364,14 +373,16 @@ typedef struct tskTaskControlBlock
 
 /* The old tskTCB name is maintained above then typedefed to the new TCB_t name
 below to enable the use of older kernel aware debuggers. */
+/*再将tskTCB取别名为TCB_t*/
 typedef tskTCB TCB_t;
 
 /*lint -e956 A manual analysis and inspection has been used to determine which
 static variables must be declared volatile. */
 
-PRIVILEGED_DATA TCB_t * volatile pxCurrentTCB = NULL;
+PRIVILEGED_DATA TCB_t * volatile pxCurrentTCB = NULL;	/*pxCurrentTCB保存当前系统中正在运行的任务的TCB指针*/
 
 /* Lists for ready and blocked tasks. --------------------*/
+/*保存当前系统中正在运行的任务的TCB指针*/
 PRIVILEGED_DATA static List_t pxReadyTasksLists[ configMAX_PRIORITIES ];/*< Prioritised ready tasks. */
 PRIVILEGED_DATA static List_t xDelayedTaskList1;						/*< Delayed tasks. */
 PRIVILEGED_DATA static List_t xDelayedTaskList2;						/*< Delayed tasks (two lists are used - one for delays that have overflowed the current tick count. */
