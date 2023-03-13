@@ -1,1 +1,4 @@
 # FreeRTOS_Learning
+
+volatile关键字
+由于在Free RTOS中存在很多异步操作，程序中的一些变量可能会在其他位置被更改，所以需要使用volatile关键字避免编译器进行寄存器优化或缓存优化，保证数据的正确性
