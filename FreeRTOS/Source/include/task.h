@@ -84,7 +84,7 @@ extern "C" {
 /*-----------------------------------------------------------
  * MACROS AND DEFINITIONS
  *----------------------------------------------------------*/
-
+/*版本号*/
 #define tskKERNEL_VERSION_NUMBER "V9.0.0"
 #define tskKERNEL_VERSION_MAJOR 9
 #define tskKERNEL_VERSION_MINOR 0
@@ -103,7 +103,7 @@ extern "C" {
 typedef void * TaskHandle_t;
 
 /*
- * Defines the prototype to which the application task hook function must
+ * Defines the prototype to which the application task hook function musts
  * conform.
  */
 typedef BaseType_t (*TaskHookFunction_t)( void * );
