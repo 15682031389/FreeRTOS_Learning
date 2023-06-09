@@ -182,19 +182,22 @@ struct xLIST_ITEM
 {
     /*用于检查链表是否完整*/
 	listFIRST_LIST_ITEM_INTEGRITY_CHECK_VALUE			/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
-    /*信号量计数值*/
+    /*列表项的值，辅助排序*/
 	configLIST_VOLATILE TickType_t xItemValue;			/*< The value being listed.  In most cases this is used to sort the list in descending order. */
     /*双向链表指针*/
 	struct xLIST_ITEM * configLIST_VOLATILE pxNext;		/*< Pointer to the next ListItem_t in the list. */
 	struct xLIST_ITEM * configLIST_VOLATILE pxPrevious;	/*< Pointer to the previous ListItem_t in the list. */
-    /*pv是指pointer to void，用于存放任意类型的指针，使用时根据需要强制转换，可以实现一些高级用法，此处指向所属的TCB*/
+    /*pv是指pointer to void，用于存放任意类型的指针，使用时根据需要强制转换，可以实现一些高级用法*/
+    /*指向拥有该链表节点的对象或资源，一般指向所属的TCB*/
 	void * pvOwner;										/*< Pointer to the object (normally a TCB) that contains the list item.  There is therefore a two way link between the object containing the list item and the list item itself. */
-	
+	/*指向包含该链表节点的容器（如队列、列表等）*/
     void * configLIST_VOLATILE pvContainer;				/*< Pointer to the list in which this list item is placed (if any). */
 	listSECOND_LIST_ITEM_INTEGRITY_CHECK_VALUE			/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
 };
+/*列表项结构体类型重定义*/
 typedef struct xLIST_ITEM ListItem_t;					/* For some reason lint wants this as two separate definitions. */
 
+/*链表精简节点*/
 struct xMINI_LIST_ITEM
 {
 	listFIRST_LIST_ITEM_INTEGRITY_CHECK_VALUE			/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
@@ -212,11 +215,11 @@ typedef struct xLIST
 {
     /*双向链表完整性检查值*/
 	listFIRST_LIST_INTEGRITY_CHECK_VALUE				/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
-    /*记录列表中的节点数*/
+    /*链表节点计数器，记录列表中的节点数*/
 	configLIST_VOLATILE UBaseType_t uxNumberOfItems;
-    /*存储节点指针*/
+    /*链表节点索引指针，存储节点指针*/
 	ListItem_t * configLIST_VOLATILE pxIndex;			/*< Used to walk through the list.  Points to the last item returned by a call to listGET_OWNER_OF_NEXT_ENTRY (). */
-	/*哨兵节点*/
+	/*哨兵节点，存储最后一个节点*/
     MiniListItem_t xListEnd;							/*< List item that contains the maximum possible item value meaning it is always at the end of the list and is therefore used as a marker. */
     /*双向链表完整性检查值*/
     listSECOND_LIST_INTEGRITY_CHECK_VALUE				/*< Set to a known value if configUSE_LIST_DATA_INTEGRITY_CHECK_BYTES is set to 1. */
@@ -229,6 +232,7 @@ typedef struct xLIST
  * \page listSET_LIST_ITEM_OWNER listSET_LIST_ITEM_OWNER
  * \ingroup LinkedList
  */
+/*设置链表节点的拥有者*/
 #define listSET_LIST_ITEM_OWNER( pxListItem, pxOwner )		( ( pxListItem )->pvOwner = ( void * ) ( pxOwner ) )
 
 /*
@@ -238,6 +242,7 @@ typedef struct xLIST
  * \page listSET_LIST_ITEM_OWNER listSET_LIST_ITEM_OWNER
  * \ingroup LinkedList
  */
+/*获取链表节点的拥有者*/
 #define listGET_LIST_ITEM_OWNER( pxListItem )	( ( pxListItem )->pvOwner )
 
 /*
@@ -247,6 +252,7 @@ typedef struct xLIST
  * \page listSET_LIST_ITEM_VALUE listSET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
+/*设置节点的排序辅助值*/
 #define listSET_LIST_ITEM_VALUE( pxListItem, xValue )	( ( pxListItem )->xItemValue = ( xValue ) )
 
 /*
@@ -257,6 +263,7 @@ typedef struct xLIST
  * \page listGET_LIST_ITEM_VALUE listGET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
+/*获取节点的排序辅助值*/
 #define listGET_LIST_ITEM_VALUE( pxListItem )	( ( pxListItem )->xItemValue )
 
 /*
@@ -266,6 +273,7 @@ typedef struct xLIST
  * \page listGET_LIST_ITEM_VALUE listGET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
+/*获取入口节点的排序辅助值*/
 #define listGET_ITEM_VALUE_OF_HEAD_ENTRY( pxList )	( ( ( pxList )->xListEnd ).pxNext->xItemValue )
 
 /*
@@ -274,6 +282,7 @@ typedef struct xLIST
  * \page listGET_HEAD_ENTRY listGET_HEAD_ENTRY
  * \ingroup LinkedList
  */
+/*获取链表的入口节点*/
 #define listGET_HEAD_ENTRY( pxList )	( ( ( pxList )->xListEnd ).pxNext )
 
 /*
@@ -282,6 +291,7 @@ typedef struct xLIST
  * \page listGET_NEXT listGET_NEXT
  * \ingroup LinkedList
  */
+/*获取节点的下一个节点*/
 #define listGET_NEXT( pxListItem )	( ( pxListItem )->pxNext )
 
 /*
@@ -290,6 +300,7 @@ typedef struct xLIST
  * \page listGET_END_MARKER listGET_END_MARKER
  * \ingroup LinkedList
  */
+/*获取链表的最后一个节点*/
 #define listGET_END_MARKER( pxList )	( ( ListItem_t const * ) ( &( ( pxList )->xListEnd ) ) )
 
 /*
@@ -299,11 +310,13 @@ typedef struct xLIST
  * \page listLIST_IS_EMPTY listLIST_IS_EMPTY
  * \ingroup LinkedList
  */
+/*判断链表是否为空*/
 #define listLIST_IS_EMPTY( pxList )	( ( BaseType_t ) ( ( pxList )->uxNumberOfItems == ( UBaseType_t ) 0 ) )
 
 /*
  * Access macro to return the number of items in the list.
  */
+/*获取链表节点数*/
 #define listCURRENT_LIST_LENGTH( pxList )	( ( pxList )->uxNumberOfItems )
 
 /*
@@ -328,15 +341,15 @@ typedef struct xLIST
  */
 #define listGET_OWNER_OF_NEXT_ENTRY( pxTCB, pxList )										\
 {																							\
-List_t * const pxConstList = ( pxList );													\
+List_t * const pxConstList = ( pxList );													\       // 临时链表指针
 	/* Increment the index to the next item and return the item, ensuring */				\
 	/* we don't return the marker used at the end of the list.  */							\
-	( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;							\
+	( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;							\       // 节点索引指向第一个节点，为什么？？？？？？？？
 	if( ( void * ) ( pxConstList )->pxIndex == ( void * ) &( ( pxConstList )->xListEnd ) )	\
 	{																						\
 		( pxConstList )->pxIndex = ( pxConstList )->pxIndex->pxNext;						\
 	}																						\
-	( pxTCB ) = ( pxConstList )->pxIndex->pvOwner;											\
+	( pxTCB ) = ( pxConstList )->pxIndex->pvOwner;											\       // 获取节点的Owner，即TCB
 }
 
 
@@ -356,6 +369,7 @@ List_t * const pxConstList = ( pxList );													\
  * \page listGET_OWNER_OF_HEAD_ENTRY listGET_OWNER_OF_HEAD_ENTRY
  * \ingroup LinkedList
  */
+/*列出链表的拥有者*/
 #define listGET_OWNER_OF_HEAD_ENTRY( pxList )  ( (&( ( pxList )->xListEnd ))->pxNext->pvOwner )
 
 /*
@@ -367,6 +381,7 @@ List_t * const pxConstList = ( pxList );													\
  * @param pxListItem The list item we want to know if is in the list.
  * @return pdTRUE if the list item is in the list, otherwise pdFALSE.
  */
+/*判断链表是否包含此节点*/
 #define listIS_CONTAINED_WITHIN( pxList, pxListItem ) ( ( BaseType_t ) ( ( pxListItem )->pvContainer == ( void * ) ( pxList ) ) )
 
 /*
@@ -375,6 +390,7 @@ List_t * const pxConstList = ( pxList );													\
  * @param pxListItem The list item being queried.
  * @return A pointer to the List_t object that references the pxListItem
  */
+/*列出节点的容器*/
 #define listLIST_ITEM_CONTAINER( pxListItem ) ( ( pxListItem )->pvContainer )
 
 /*
@@ -382,6 +398,7 @@ List_t * const pxConstList = ( pxList );													\
  * pxList->xListEnd.xItemValue is set to portMAX_DELAY by the vListInitialise()
  * function.
  */
+/*判断链表是否已初始化*/
 #define listLIST_IS_INITIALISED( pxList ) ( ( pxList )->xListEnd.xItemValue == portMAX_DELAY )
 
 /*

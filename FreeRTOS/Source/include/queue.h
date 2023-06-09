@@ -85,21 +85,21 @@ extern "C" {
  * returns an QueueHandle_t variable that can then be used as a parameter to
  * xQueueSend(), xQueueReceive(), etc.
  */
-typedef void * QueueHandle_t;
+typedef void * QueueHandle_t;				// 队列 句柄类型定义
 
 /**
  * Type by which queue sets are referenced.  For example, a call to
  * xQueueCreateSet() returns an xQueueSet variable that can then be used as a
  * parameter to xQueueSelectFromSet(), xQueueAddToSet(), etc.
  */
-typedef void * QueueSetHandle_t;
+typedef void * QueueSetHandle_t;			// 队列集合 句柄类型定义
 
 /**
  * Queue sets can contain both queues and semaphores, so the
  * QueueSetMemberHandle_t is defined as a type to be used where a parameter or
  * return value can be either an QueueHandle_t or an SemaphoreHandle_t.
  */
-typedef void * QueueSetMemberHandle_t;
+typedef void * QueueSetMemberHandle_t;		// 队列集合成员 句柄类型定义
 
 /* For internal use only. */
 #define	queueSEND_TO_BACK		( ( BaseType_t ) 0 )
@@ -117,7 +117,7 @@ typedef void * QueueSetMemberHandle_t;
 /**
  * queue. h
  * <pre>
- QueueHandle_t xQueueCreate(
+ QueueHandle_t xQueueCreate(																	任务创建函数
 							  UBaseType_t uxQueueLength,
 							  UBaseType_t uxItemSize
 						  );
@@ -138,14 +138,14 @@ typedef void * QueueSetMemberHandle_t;
  *
  * http://www.FreeRTOS.org/Embedded-RTOS-Queues.html
  *
- * @param uxQueueLength The maximum number of items that the queue can contain.
+ * @param uxQueueLength The maximum number of items that the queue can contain.					队列包含的成员最大数量
  *
- * @param uxItemSize The number of bytes each item in the queue will require.
+ * @param uxItemSize The number of bytes each item in the queue will require.					队列项大小
  * Items are queued by copy, not by reference, so this is the number of bytes
  * that will be copied for each posted item.  Each item on the queue must be
  * the same size.
  *
- * @return If the queue is successfully create then a handle to the newly
+ * @return If the queue is successfully create then a handle to the newly						返回是否创建成功
  * created queue is returned.  If the queue cannot be created then 0 is
  * returned.
  *
@@ -212,9 +212,9 @@ typedef void * QueueSetMemberHandle_t;
  *
  * http://www.FreeRTOS.org/Embedded-RTOS-Queues.html
  *
- * @param uxQueueLength The maximum number of items that the queue can contain.
+ * @param uxQueueLength The maximum number of items that the queue can contain.					队列最大成员数量
  *
- * @param uxItemSize The number of bytes each item in the queue will require.
+ * @param uxItemSize The number of bytes each item in the queue will require.					队列想大小
  * Items are queued by copy, not by reference, so this is the number of bytes
  * that will be copied for each posted item.  Each item on the queue must be
  * the same size.

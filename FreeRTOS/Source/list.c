@@ -75,16 +75,18 @@
 /*-----------------------------------------------------------
  * PUBLIC LIST API documented in list.h
  *----------------------------------------------------------*/
-
+/*链表初始化*/
 void vListInitialise( List_t * const pxList )
 {
 	/* The list structure contains a list item which is used to mark the
 	end of the list.  To initialise the list the list end is inserted
 	as the only list entry. */
+	/*指向最后一个节点*/
 	pxList->pxIndex = ( ListItem_t * ) &( pxList->xListEnd );			/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 
 	/* The list end value is the highest possible value in the list to
 	ensure it remains at the end of the list. */
+	/*初始化值为最大值*/
 	pxList->xListEnd.xItemValue = portMAX_DELAY;
 
 	/* The list end next and previous pointers point to itself so we know
@@ -92,6 +94,7 @@ void vListInitialise( List_t * const pxList )
 	pxList->xListEnd.pxNext = ( ListItem_t * ) &( pxList->xListEnd );	/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 	pxList->xListEnd.pxPrevious = ( ListItem_t * ) &( pxList->xListEnd );/*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 
+	/*成员数量初始化为0*/
 	pxList->uxNumberOfItems = ( UBaseType_t ) 0U;
 
 	/* Write known values into the list if
@@ -113,6 +116,7 @@ void vListInitialiseItem( ListItem_t * const pxItem )
 }
 /*-----------------------------------------------------------*/
 
+/*尾插法插入节点*/
 void vListInsertEnd( List_t * const pxList, ListItem_t * const pxNewListItem )
 {
 ListItem_t * const pxIndex = pxList->pxIndex;
@@ -136,16 +140,16 @@ ListItem_t * const pxIndex = pxList->pxIndex;
 	pxIndex->pxPrevious = pxNewListItem;
 
 	/* Remember which list the item is in. */
-	pxNewListItem->pvContainer = ( void * ) pxList;
+	pxNewListItem->pvContainer = ( void * ) pxList;		// 容器是List
 
-	( pxList->uxNumberOfItems )++;
+	( pxList->uxNumberOfItems )++;						// 数量+1
 }
 /*-----------------------------------------------------------*/
-
+/*升序排序插入链表，如果两个节点的值相同，则新节点在旧节点后面插入*/
 void vListInsert( List_t * const pxList, ListItem_t * const pxNewListItem )
 {
-ListItem_t *pxIterator;
-const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
+ListItem_t *pxIterator;												// 辅助插入的临时指针
+const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;		// 获取辅助排序值
 
 	/* Only effective when configASSERT() is also defined, these tests may catch
 	the list data structures being overwritten in memory.  They will not catch
@@ -161,7 +165,7 @@ const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
 	share of the CPU.  However, if the xItemValue is the same as the back marker
 	the iteration loop below will not end.  Therefore the value is checked
 	first, and the algorithm slightly modified if necessary. */
-	if( xValueOfInsertion == portMAX_DELAY )
+	if( xValueOfInsertion == portMAX_DELAY )		// 如果是最大值，插入位置为尾部
 	{
 		pxIterator = pxList->xListEnd.pxPrevious;
 	}
@@ -188,7 +192,7 @@ const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
 			   before the scheduler has been started (are interrupts firing
 			   before vTaskStartScheduler() has been called?).
 		**********************************************************************/
-
+		// 从后往前遍历，找到要插入的位置
 		for( pxIterator = ( ListItem_t * ) &( pxList->xListEnd ); pxIterator->pxNext->xItemValue <= xValueOfInsertion; pxIterator = pxIterator->pxNext ) /*lint !e826 !e740 The mini list structure is used as the list end to save RAM.  This is checked and valid. */
 		{
 			/* There is nothing to do here, just iterating to the wanted
@@ -203,9 +207,9 @@ const TickType_t xValueOfInsertion = pxNewListItem->xItemValue;
 
 	/* Remember which list the item is in.  This allows fast removal of the
 	item later. */
-	pxNewListItem->pvContainer = ( void * ) pxList;
+	pxNewListItem->pvContainer = ( void * ) pxList;		// 节点所有者为此链表
 
-	( pxList->uxNumberOfItems )++;
+	( pxList->uxNumberOfItems )++;						// 计数器+1
 }
 /*-----------------------------------------------------------*/
 
@@ -232,9 +236,9 @@ List_t * const pxList = ( List_t * ) pxItemToRemove->pvContainer;
 	}
 
 	pxItemToRemove->pvContainer = NULL;
-	( pxList->uxNumberOfItems )--;
+	( pxList->uxNumberOfItems )--;			// 列表项数量-1
 
-	return pxList->uxNumberOfItems;
+	return pxList->uxNumberOfItems;			// 返回列表项数
 }
 /*-----------------------------------------------------------*/
 

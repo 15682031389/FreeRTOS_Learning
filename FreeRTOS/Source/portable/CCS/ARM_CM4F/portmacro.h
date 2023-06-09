@@ -98,10 +98,10 @@ typedef portSTACK_TYPE StackType_t;
 typedef long BaseType_t;
 typedef unsigned long UBaseType_t;
 
-#if( configUSE_16_BIT_TICKS == 1 )
+#if( configUSE_16_BIT_TICKS == 1 )  // 16位
 	typedef uint16_t TickType_t;
 	#define portMAX_DELAY ( TickType_t ) 0xffff
-#else
+#else                               // 32位
 	typedef uint32_t TickType_t;
 	#define portMAX_DELAY ( TickType_t ) 0xffffffffUL
 

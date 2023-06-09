@@ -129,8 +129,11 @@ zero. */
  */
 typedef struct QueueDefinition
 {
+	// 队头指针
 	int8_t *pcHead;					/*< Points to the beginning of the queue storage area. */
+	// 队尾指针
 	int8_t *pcTail;					/*< Points to the byte at the end of the queue storage area.  Once more byte is allocated than necessary to store the queue items, this is used as a marker. */
+	// 下一块可写地址指针
 	int8_t *pcWriteTo;				/*< Points to the free next place in the storage area. */
 
 	union							/* Use of a union is an exception to the coding standard to ensure two mutually exclusive structure members don't appear simultaneously (wasting RAM). */
@@ -385,33 +388,34 @@ Queue_t * const pxQueue = ( Queue_t * ) xQueue;
 
 	QueueHandle_t xQueueGenericCreate( const UBaseType_t uxQueueLength, const UBaseType_t uxItemSize, const uint8_t ucQueueType )
 	{
-	Queue_t *pxNewQueue;
-	size_t xQueueSizeInBytes;
-	uint8_t *pucQueueStorage;
+	Queue_t *pxNewQueue;		// 队列结构体类型指针，指向创建的队列
+	size_t xQueueSizeInBytes;	// 队列所需的存储空间大小(Bytes)
+	uint8_t *pucQueueStorage;	// 队列存储区域起始位置
 
-		configASSERT( uxQueueLength > ( UBaseType_t ) 0 );
+		configASSERT( uxQueueLength > ( UBaseType_t ) 0 );	// 断言，确保输入参数正确
 
-		if( uxItemSize == ( UBaseType_t ) 0 )
+		if( uxItemSize == ( UBaseType_t ) 0 )		// 单个队列项大小为0
 		{
 			/* There is not going to be a queue storage area. */
 			xQueueSizeInBytes = ( size_t ) 0;
 		}
-		else
+		else										// 单个队列项大小大于0
 		{
 			/* Allocate enough space to hold the maximum number of items that
 			can be in the queue at any time. */
+			// 计算所需的存储空间
 			xQueueSizeInBytes = ( size_t ) ( uxQueueLength * uxItemSize ); /*lint !e961 MISRA exception as the casts are only redundant for some ports. */
 		}
 
-		pxNewQueue = ( Queue_t * ) pvPortMalloc( sizeof( Queue_t ) + xQueueSizeInBytes );
+		pxNewQueue = ( Queue_t * ) pvPortMalloc( sizeof( Queue_t ) + xQueueSizeInBytes );		// 分配内存，大小为队列结构体+队列存储区大小
 
-		if( pxNewQueue != NULL )
+		if( pxNewQueue != NULL )	// 存储空间分配成功
 		{
 			/* Jump past the queue structure to find the location of the queue
 			storage area. */
-			pucQueueStorage = ( ( uint8_t * ) pxNewQueue ) + sizeof( Queue_t );
+			pucQueueStorage = ( ( uint8_t * ) pxNewQueue ) + sizeof( Queue_t );		// 计算队列存储区域起始位置
 
-			#if( configSUPPORT_STATIC_ALLOCATION == 1 )
+			#if( configSUPPORT_STATIC_ALLOCATION == 1 )		// 如果宏定义为支持静态分配，则标识队列是动态分配的
 			{
 				/* Queues can be created either statically or dynamically, so
 				note this task was created dynamically in case it is later
@@ -420,10 +424,10 @@ Queue_t * const pxQueue = ( Queue_t * ) xQueue;
 			}
 			#endif /* configSUPPORT_STATIC_ALLOCATION */
 
-			prvInitialiseNewQueue( uxQueueLength, uxItemSize, pucQueueStorage, ucQueueType, pxNewQueue );
+			prvInitialiseNewQueue( uxQueueLength, uxItemSize, pucQueueStorage, ucQueueType, pxNewQueue );	// 传入参数，初始化队列
 		}
 
-		return pxNewQueue;
+		return pxNewQueue;	// 返回队列指针
 	}
 
 #endif /* configSUPPORT_STATIC_ALLOCATION */
@@ -433,9 +437,9 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength, const UBaseT
 {
 	/* Remove compiler warnings about unused parameters should
 	configUSE_TRACE_FACILITY not be set to 1. */
-	( void ) ucQueueType;
+	( void ) ucQueueType;	// 没有实际的作用，用于在未使用该参数的情况下，避免编译器警告
 
-	if( uxItemSize == ( UBaseType_t ) 0 )
+	if( uxItemSize == ( UBaseType_t ) 0 )	// 队列项大小为0，队头指向自己
 	{
 		/* No RAM was allocated for the queue storage area, but PC head cannot
 		be set to NULL because NULL is used as a key to say the queue is used as
@@ -443,7 +447,7 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength, const UBaseT
 		value that is known to be within the memory map. */
 		pxNewQueue->pcHead = ( int8_t * ) pxNewQueue;
 	}
-	else
+	else									// 队列项大小非0，队头指向第一个队列项
 	{
 		/* Set the head to the start of the queue storage area. */
 		pxNewQueue->pcHead = ( int8_t * ) pucQueueStorage;
@@ -451,9 +455,9 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength, const UBaseT
 
 	/* Initialise the queue members as described where the queue type is
 	defined. */
-	pxNewQueue->uxLength = uxQueueLength;
-	pxNewQueue->uxItemSize = uxItemSize;
-	( void ) xQueueGenericReset( pxNewQueue, pdTRUE );
+	pxNewQueue->uxLength = uxQueueLength;		// 队列长度赋值
+	pxNewQueue->uxItemSize = uxItemSize;		// 队列项大小赋值
+	( void ) xQueueGenericReset( pxNewQueue, pdTRUE );		// 清空队列并重置状态
 
 	#if ( configUSE_TRACE_FACILITY == 1 )
 	{
@@ -461,13 +465,13 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength, const UBaseT
 	}
 	#endif /* configUSE_TRACE_FACILITY */
 
-	#if( configUSE_QUEUE_SETS == 1 )
+	#if( configUSE_QUEUE_SETS == 1 )			// 未使用队列集，设置标志位
 	{
 		pxNewQueue->pxQueueSetContainer = NULL;
 	}
 	#endif /* configUSE_QUEUE_SETS */
 
-	traceQUEUE_CREATE( pxNewQueue );
+	traceQUEUE_CREATE( pxNewQueue );			// 可在FreeRTOS中追踪队列创建的过程，帮助开发人员调试分析
 }
 /*-----------------------------------------------------------*/
 
