@@ -109,79 +109,109 @@ typedef void * TaskHandle_t;
 typedef BaseType_t (*TaskHookFunction_t)( void * );
 
 /* Task states returned by eTaskGetState. */
+/*任务状态*/
 typedef enum
 {
+	/*运行中*/
 	eRunning = 0,	/* A task is querying the state of itself, so must be running. */
+	/*就绪*/
 	eReady,			/* The task being queried is in a read or pending ready list. */
+	/*阻塞*/
 	eBlocked,		/* The task being queried is in the Blocked state. */
+	/*挂起*/
 	eSuspended,		/* The task being queried is in the Suspended state, or is in the Blocked state with an infinite time out. */
+	/*已删除*/
 	eDeleted,		/* The task being queried has been deleted, but its TCB has not yet been freed. */
+	/*无效*/
 	eInvalid			/* Used as an 'invalid state' value. */
 } eTaskState;
 
 /* Actions that can be performed when vTaskNotify() is called. */
+/*任务通知操作类型*/
 typedef enum
 {
+	/*不执行任何操作*/
 	eNoAction = 0,				/* Notify the task without updating its notify value. */
+	/*设置任务事件标志位*/
 	eSetBits,					/* Set bits in the task's notification value. */
+	/*增加任务通知计数*/
 	eIncrement,					/* Increment the task's notification value. */
+	/*向任务发送通知，并将任务通知值设置为特定值，即使之气那的通知值尚未被任务读取*/
 	eSetValueWithOverwrite,		/* Set the task's notification value to a specific value even if the previous value has not yet been read by the task. */
+	/*等待之前的通知值被读取之后，再更新通知值*/
 	eSetValueWithoutOverwrite	/* Set the task's notification value if the previous value has been read by the task. */
 } eNotifyAction;
 
 /*
  * Used internally only.
  */
+/*用于计算超时时间*/
 typedef struct xTIME_OUT
 {
-	BaseType_t xOverflowCount;
-	TickType_t xTimeOnEntering;
+	BaseType_t xOverflowCount;	// 计时器溢出次数
+	TickType_t xTimeOnEntering;	// 进入操作时的系统时间
 } TimeOut_t;
 
 /*
  * Defines the memory ranges allocated to the task when an MPU is used.
  */
+/*定义使用MPU时分配给任务的内存空间*/
 typedef struct xMEMORY_REGION
 {
-	void *pvBaseAddress;
-	uint32_t ulLengthInBytes;
-	uint32_t ulParameters;
+	void *pvBaseAddress;		// 内存区域起始地址指针
+	uint32_t ulLengthInBytes;	// 内存区域长度
+	uint32_t ulParameters;		// 存储与内存区域相关的其他参数或标志
 } MemoryRegion_t;
 
 /*
  * Parameters required to create an MPU protected task.
  */
+/*用于描述任务的参数和属性*/
 typedef struct xTASK_PARAMETERS
 {
-	TaskFunction_t pvTaskCode;
-	const char * const pcName;	/*lint !e971 Unqualified char types are allowed for strings and single characters only. */
-	uint16_t usStackDepth;
-	void *pvParameters;
-	UBaseType_t uxPriority;
-	StackType_t *puxStackBuffer;
-	MemoryRegion_t xRegions[ portNUM_CONFIGURABLE_REGIONS ];
+	TaskFunction_t pvTaskCode;		// 指向任务函数的指针
+	const char * const pcName;		// 任务名称
+	uint16_t usStackDepth;			// 任务堆栈深度
+	void *pvParameters;				// 传递给任务函数的参数，可以是任意类型的指针
+	UBaseType_t uxPriority;			// 任务优先级
+	StackType_t *puxStackBuffer;	// 指向任务堆栈的指针
+	MemoryRegion_t xRegions[ portNUM_CONFIGURABLE_REGIONS ];	// 用于描述任务所需内存区域的数组
 } TaskParameters_t;
 
 /* Used with the uxTaskGetSystemState() function to return the state of each task
 in the system. */
+/*用于描述任务状态和属性*/
 typedef struct xTASK_STATUS
 {
+	/*任务句柄，用于唯一标识任务*/
 	TaskHandle_t xHandle;			/* The handle of the task to which the rest of the information in the structure relates. */
+	/*任务名称，字符串表示*/
 	const char *pcTaskName;			/* A pointer to the task's name.  This value will be invalid if the task was deleted since the structure was populated! */ /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
+	/*任务编号，用于唯一标识任务*/
 	UBaseType_t xTaskNumber;		/* A number unique to the task. */
+	/*任务当前状态*/
 	eTaskState eCurrentState;		/* The state in which the task existed when the structure was populated. */
+	/*任务当前优先级*/
 	UBaseType_t uxCurrentPriority;	/* The priority at which the task was running (may be inherited) when the structure was populated. */
+	/*任务基础优先级*/
 	UBaseType_t uxBasePriority;		/* The priority to which the task will return if the task's current priority has been inherited to avoid unbounded priority inversion when obtaining a mutex.  Only valid if configUSE_MUTEXES is defined as 1 in FreeRTOSConfig.h. */
+	/*任务总运行时间*/
 	uint32_t ulRunTimeCounter;		/* The total run time allocated to the task so far, as defined by the run time stats clock.  See http://www.freertos.org/rtos-run-time-stats.html.  Only valid when configGENERATE_RUN_TIME_STATS is defined as 1 in FreeRTOSConfig.h. */
+	/*指向任务堆栈的最低地址*/
 	StackType_t *pxStackBase;		/* Points to the lowest address of the task's stack area. */
+	/*任务的堆栈剩余空间最小量*/
 	uint16_t usStackHighWaterMark;	/* The minimum amount of stack space that has remained for the task since the task was created.  The closer this value is to zero the closer the task has come to overflowing its stack. */
 } TaskStatus_t;
 
 /* Possible return values for eTaskConfirmSleepModeStatus(). */
+/*描述睡眠模式的状态，支持系统的低功耗功能*/
 typedef enum
 {
+	/*防止进入睡眠模式，在调用 portSUPPRESS_TICKS_AND_SLEEP() 之后，有一个任务变为可运行状态或有上下文切换挂起，因此中止进入睡眠模式。*/
 	eAbortSleep = 0,		/* A task has been made ready or a context switch pended since portSUPPORESS_TICKS_AND_SLEEP() was called - abort entering a sleep mode. */
+	/*标准睡眠模式，进入一个不会超过预期空闲时间的睡眠模式*/
 	eStandardSleep,			/* Enter a sleep mode that will not last any longer than the expected idle time. */
+	/*可外部中断的睡眠模式，当没有任务在等待超时时，可以安全地进入一种只能通过外部中断退出的睡眠模式，以降低功耗。这种睡眠模式可以确保系统在外部中断到来时能够及时唤醒，而不需要依赖任务的定时器或超时事件。*/
 	eNoTasksWaitingTimeout	/* No tasks are waiting for a timeout so it is safe to enter a sleep mode that can only be exited by an external interrupt. */
 } eSleepModeStatus;
 
